@@ -12,10 +12,10 @@ contract Game {
     
     SLOT_STATE[6][7] board;
     
-    enum STATE{ P1_TURN, P2_TURN, WAITING }
+    enum GAME_STATE{ P1_TURN, P2_TURN, WAITING }
     enum SLOT_STATE { YELLOW, RED, EMPTY }
     
-    address whosTurn;
+    GAME_STATE gameState = GAME_STATE.WAITING;
     address p1;
     address p2;
     
@@ -37,9 +37,62 @@ contract Game {
      * 
      * 'inserts' the chip to the specified slot on the board
     */
-    function insert(uint column) public {
+    function insert(uint column) public returns (string memory){
+        
+        // check that the right people are calling this function
+        if (gameState == GAME_STATE.P1_TURN) {
+            require(msg.sender == p1, "It is player 1's turn");
+        }
+        
+        if (gameState == GAME_STATE.P2_TURN) {
+            require(msg.sender == p2, "It is player 2's turn");
+        }
+        
+        if (gameState == GAME_STATE.WAITING) {
+            require(gameState != GAME_STATE.WAITING, "Game needs 2 players to start");
+        }
+        
+        
         SLOT_STATE[6] memory col = board[column];
-        // TODO Refactor board so that it uses enums rather Strings
+        require(col[NUM_ROWS - 1] == SLOT_STATE.EMPTY, "Column is full");
+        
+        uint i = 0;
+        while(i < NUM_ROWS && col[i] != SLOT_STATE.EMPTY) {
+            i = i + 1;
+        }
+        
+        col[i] = getColor();
+        board[column] = col;
+        
+        // adjust the game state according to who just moved
+        if (gameState == GAME_STATE.WAITING || gameState == GAME_STATE.P2_TURN) {
+            gameState = GAME_STATE.P1_TURN;
+        } else if (gameState == GAME_STATE.P1_TURN) {
+            gameState = GAME_STATE.P2_TURN;
+        }
+        
+        return checkForWin();
+    }
+    
+    function checkForWin() private returns (string memory) {
+        // TODO: Implement Me!
+        
+        string memory P1_WIN_MSG = "Player 1 wins!";
+        string memory P2_WIN_MSG = "Player 2 wins!";
+        
+        return "No winner";
+    }
+    
+    
+    /**
+     * getColor() returns a color based on whos turn it is
+    * 
+    */
+    function getColor() private returns (SLOT_STATE) {
+        if (gameState == GAME_STATE.P1_TURN) {
+            return SLOT_STATE.YELLOW;
+        }
+        return SLOT_STATE.RED;
     }
     
     
@@ -72,13 +125,22 @@ contract Game {
             boardString = concat(boardString,"\n");
         }
         
-        
         return boardString;
     }
     
     
-    function joinGame(address playerAlias) public{
+    function joinGame() public{
+        require(p1 == address(0) || p2 == address(0),"Game is full");
+        require(p1 != msg.sender && p2 != msg.sender,"Player has already joined the game");
         
+        if (p1 == address(0)) {
+            p1 = msg.sender;
+        } else if (p2 == address(0)) {
+            p2 = msg.sender;
+        }
+        
+        if (p1 != address(0) && p2 != address(0)) {
+            gameState = GAME_STATE.P1_TURN;
+        }
     }
-    
 }
