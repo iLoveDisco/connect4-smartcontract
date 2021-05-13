@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Web 3 Demo</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+
+   <script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
+</head>
+
+<body>
+
+    Connect 4 Game
+    <br >
+    <button onclick="join();">Join Game</button>
+    <button onclick="reset();">Reset</button>
+    <button onclick="update();">Update Board</button>
+    <button onclick="move0();">0</button>
+    <button onclick="move1();">1</button>
+    <button onclick="move2();">2</button>
+    <button onclick="move3();">3</button>
+    <button onclick="move4();">4</button>
+    <button onclick="move5();">5</button>
+    <button onclick="move6();">6</button>
+    <br /><br />
+    Status: <span id="status">Loading...</span>
+
+    <script type="text/javascript">
+        async function loadWeb3() {
+            if (window.ethereum) {
+                window.web3 = new Web3(window.ethereum);
+                window.ethereum.enable();
+            }
+        }
+
+        async function loadContract() {
+            return await new window.web3.eth.Contract([
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "getBoardString",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "column",
+				"type": "uint256"
+			}
+		],
+		"name": "insert",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "joinGame",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+], '0x19F1A16A694223c067104771b0d422b962d40d12');
+        }
+
+        async function move0() {
+            updateStatus(`inserting a token in the 0 position`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.insert(0).send({ from: account });
+            updateStatus('Updated move0.');
+        }
+        async function move1() {
+            updateStatus(`inserting a token in the 1 position`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.insert(1).send({ from: account });
+            updateStatus(coolNumber);
+        }
+        async function move2() {
+            updateStatus(`inserting a token in the 2 position`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.insert(2).send({ from: account });
+            updateStatus('Updated move2.');
+        }
+        async function move3() {
+            updateStatus(`inserting a token in the 3 position`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.insert(3).send({ from: account });
+            updateStatus('Updated move3.');
+        }
+        async function move4() {
+            updateStatus(`inserting a token in the 4 position`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.insert(4).send({ from: account });
+            updateStatus('Updated move4.');
+        }
+        async function move5() {
+            updateStatus(`inserting a token in the 5 position`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.insert(5).send({ from: account });
+            updateStatus('Updated move5.');
+        }
+        async function move6() {
+            updateStatus(`inserting a token in the 6 position`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.insert(6).send({ from: account });
+            updateStatus('Updated move6.');
+        }
+        async function reset() {
+        }
+        async function join() {
+            updateStatus(`joining game`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.joinGame().send({ from: account });
+            updateStatus('Updated joinGame.');
+        }
+        async function update() {
+         
+           var x = await window.contract.methods.getBoardString().call();
+           updateStatus(x);
+        }
+
+        async function printCoolNumber() {
+            updateStatus('fetching Cool Number...');
+            const coolNumber = await window.contract.methods.coolNumber().call();
+            updateStatus(`coolNumber: ${coolNumber}`);
+        }
+
+        async function getCurrentAccount() {
+            const accounts = await window.web3.eth.getAccounts();
+            return accounts[0];r
+        }
+
+        async function changeCoolNumber() {
+            const value = Math.floor(Math.random() * 100);
+            updateStatus(`Updating coolNumber with ${value}`);
+            const account = await getCurrentAccount();
+            const coolNumber = await window.contract.methods.setCoolNumber(value).send({ from: account });
+            updateStatus('Updated.');
+        }
+
+        async function load() {
+            await loadWeb3();
+            window.contract = await loadContract();
+            updateStatus('Ready!');
+        }
+
+        function updateStatus(status) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = status;
+            console.log(status);
+        }
+
+        load();
+    </script>
+</body>
+
+</html>
