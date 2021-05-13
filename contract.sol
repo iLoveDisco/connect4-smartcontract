@@ -31,7 +31,6 @@ contract Game {
         }
     }
     
-    
     /**
      * insert(uint column) receives a column number
      * 
@@ -80,9 +79,65 @@ contract Game {
         string memory P1_WIN_MSG = "Player 1 wins!";
         string memory P2_WIN_MSG = "Player 2 wins!";
         
+        bool isWin = checkRows() || checkCols();
+        
+        
+        // Player 1 just went
+        if (gameState == GAME_STATE.P2_TURN && isWin) {
+            endGame();
+            return "Player 1 wins!";
+        }
+        
+        // Player 2 just went
+        if (gameState == GAME_STATE.P1_TURN && isWin) {
+            endGame();
+            return "Player 2 wins!";
+        }
+        
+        if (checkTie()) {
+            endGame();
+            return "It is a tie!";
+        }
+        
         return "No winner";
     }
     
+    function endGame() private {
+        gameState = GAME_STATE.WAITING;
+        p1 = address(0);
+        p2 = address(0);
+        resetBoard();
+    }
+    
+    function checkRows() private returns (bool) {
+        bool output = false;
+        for (uint i = 0; i < NUM_ROWS; i++) {
+            for (uint j = 0; j < NUM_COLS - 3; j++) {
+                output = output || ((board[j][i] != SLOT_STATE.EMPTY) && (board[j][i] == board[j + 1][i]) && (board[j + 1][i] == board[j+2][i]) && (board[j+2][i] == board[j+3][i]));
+            }
+        }
+        return output;
+    }
+    
+    function checkCols() private returns (bool) {
+        bool output = false;
+        for (uint i = 0; i < NUM_COLS; i++) {
+            for (uint j = 0; j < NUM_ROWS - 3; j++) {
+                output = output || ((board[i][j] != SLOT_STATE.EMPTY) && (board[i][j] == board[i][j+1]) && (board[i][j+1] == board[i][j+2]) && (board[i][j+2] == board[i][j+3]));
+            }
+        }
+        return output;
+    }
+    
+    function checkTie() private returns (bool) {
+        bool output = false;
+        for (uint i = 0; i < NUM_ROWS; i++) {
+            for (uint j = 0; j < NUM_COLS; j++) {
+                output = output && (board[i][j] != SLOT_STATE.EMPTY);
+            }
+        }
+        return output;
+    }
     
     /**
      * getColor() returns a color based on whos turn it is
@@ -129,18 +184,25 @@ contract Game {
     }
     
     
-    function joinGame() public{
+    function joinGame() public returns (string memory){
         require(p1 == address(0) || p2 == address(0),"Game is full");
         require(p1 != msg.sender && p2 != msg.sender,"Player has already joined the game");
         
+        string memory outputMsg = "";
+        
         if (p1 == address(0)) {
             p1 = msg.sender;
+            outputMsg = "P1 has joined!";
         } else if (p2 == address(0)) {
             p2 = msg.sender;
+            outputMsg = "P2 has joined!";
         }
         
         if (p1 != address(0) && p2 != address(0)) {
             gameState = GAME_STATE.P1_TURN;
+            outputMsg = "Both players have joined! P1 goes first";
         }
+        
+        return outputMsg;
     }
 }
